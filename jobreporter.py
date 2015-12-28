@@ -1,9 +1,9 @@
 import csv
 import os
 import smtplib
-from bs4 import BeautifulSoup
 from datetime import datetime
 from urllib.request import urlopen
+from bs4 import BeautifulSoup
 
 
 class JobReport(object):
