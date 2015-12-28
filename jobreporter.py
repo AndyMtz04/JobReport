@@ -7,9 +7,9 @@ from bs4 import BeautifulSoup
 
 
 class JobReport(object):
-    def __init__(self, file_name):
+    def __init__(self, file_name, file_path):
         self.file_name = file_name
-        self.file_path = "D:\\programming\\python\\projects\\job\\results\\"
+        self.file_path = file_path
         self.complete_path = self.file_path + self.file_name
 
     def parse_results(self, url):
@@ -39,7 +39,8 @@ class JobReport(object):
     def has_new_records(self, results):
         current_posts = [x["url"] for x in results]
         if not os.path.exists(self.complete_path):
-            return True
+            with open(self.complete_path, "w") as new_file:
+                return True
         with open(self.complete_path, "r") as file:
             reader = csv.DictReader(file, delimiter="|")
             seen_posts = [row["url"] for row in reader]
