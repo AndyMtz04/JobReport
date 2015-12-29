@@ -30,7 +30,7 @@ class JobReport(object):
         return results
 
     def write_results(self, results):
-        fields = results[0].keys()
+        fields = list(results[0].keys())
         with open(self.complete_path, "w") as file:
             dw = csv.DictWriter(file, fieldnames=fields, delimiter="|", lineterminator="\n")
             dw.writer.writerow(dw.fieldnames)
