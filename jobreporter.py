@@ -30,11 +30,11 @@ class JobReport(object):
         for row in rows:
             if count < 30:
                 count += 1
-                post_url = "https://austin.craigslist.org" + row.a["href"]
-                post_date = row.find("time").get("datetime")
-                post_title = row.find_all("a")[1].get_text()
-                results.append({"url": post_url, "post_date": post_date,
-                                "post_title": post_title})
+                job_url = "https://austin.craigslist.org" + row.a["href"]
+                job_date = row.find("time").get("datetime")
+                job_title = row.find_all("a")[1].get_text()
+                results.append({"job_url": job_url, "job_date": job_date,
+                                "job_title": job_title})
             else:
                 break
         return results
@@ -49,10 +49,10 @@ class JobReport(object):
         dict = json.loads(content)
         for x in dict["results"]:
             job_title = x["linemajor_link/_text"]
-            job_link = x["linemajor_link"]
+            job_url = x["linemajor_link"]
             job_time = x["subsmall_value_2"]
             job_company = x["subsmall_value_1"]
-            results.append({"job_title": job_title, "job_link": job_link,
+            results.append({"job_title": job_title, "job_url": job_url,
                             "job_time": job_time, "job_company": job_company})
         return results
 
@@ -69,13 +69,13 @@ class JobReport(object):
         """Function compares results with stored results to determine
          if new jobs have been posted.
          """
-        current_posts = [x["url"] for x in results]
+        current_posts = [x["job_url"] for x in results]
         if not os.path.exists(self.complete_path):
             with open(self.complete_path, "w") as new_file:
                 return True
         with open(self.complete_path, "r") as file:
             reader = csv.DictReader(file, delimiter="|")
-            seen_posts = [row["url"] for row in reader]
+            seen_posts = [row["job_url"] for row in reader]
 
         is_new = False
         for post in current_posts:
@@ -112,7 +112,7 @@ class JobReport(object):
                 if results[x] in seen_results:
                     pass
                 else:
-                    post_title = results[x]["post_title"]
-                    post_url = results[x]["url"]
-                    final_results.append({post_title: post_url})
+                    job_title = results[x]["job_title"]
+                    job_url = results[x]["job_url"]
+                    final_results.append({job_title: job_url})
         return final_results
