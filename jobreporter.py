@@ -41,19 +41,27 @@ class JobReport(object):
 
     def austincc_parse(self, url):
         """Function parses job data into a list from
-        http://sites.austincc.edu/jobs/jobs with import.io's api.
+        http://sites.austincc.edu/ with import.io's api.
         """
         results = []
         html = urlopen(url)
         content = html.read().decode(html.headers.get_content_charset())
-        dict = json.loads(content)
-        for x in dict["results"]:
-            job_title = x["linemajor_link/_text"]
-            job_url = x["linemajor_link"]
-            job_time = x["subsmall_value_2"]
-            job_company = x["subsmall_value_1"]
-            results.append({"job_title": job_title, "job_url": job_url,
-                            "job_time": job_time, "job_company": job_company})
+        json_dict = json.loads(content)
+        if "ehire" in json_dict["pageUrl"]:
+            for x in json_dict["results"]:
+                job_title = x["title_link/_text"]
+                job_url = x["jobnumber_link"]
+                job_location = x ["location_value"]
+                results.append({"job_title": job_title, "job_url": job_url,
+                            "job_location": job_location})
+        else:
+            for x in json_dict["results"]:
+                job_title = x["linemajor_link/_text"]
+                job_url = x["linemajor_link"]
+                job_time = x["subsmall_value_2"]
+                job_company = x["subsmall_value_1"]
+                results.append({"job_title": job_title, "job_url": job_url,
+                                "job_time": job_time, "job_company": job_company})
         return results
 
     def write_results(self, results):
