@@ -4,13 +4,13 @@ import csv
 
 import os
 
-import smtplib
-
 from datetime import datetime
 
 from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
+
+from pushbullet import PushBullet
 
 
 class JobReport(object):
@@ -51,9 +51,9 @@ class JobReport(object):
             for x in json_dict["results"]:
                 job_title = x["title_link/_text"]
                 job_url = x["jobnumber_link"]
-                job_location = x ["location_value"]
+                job_location = x["location_value"]
                 results.append({"job_title": job_title, "job_url": job_url,
-                            "job_location": job_location})
+                                "job_location": job_location})
         else:
             for x in json_dict["results"]:
                 job_title = x["linemajor_link/_text"]
@@ -61,7 +61,19 @@ class JobReport(object):
                 job_time = x["subsmall_value_2"]
                 job_company = x["subsmall_value_1"]
                 results.append({"job_title": job_title, "job_url": job_url,
-                                "job_time": job_time, "job_company": job_company})
+                                "job_time": job_time,
+                                "job_company": job_company})
+        return results
+
+    def indeed_parse(self, url):
+        results = []
+        html = urlopen(url)
+        content = html.read().decode(html.headers.get_content_charset())
+        json_dict = json.loads(content)
+        for x in json_dict["results"]:
+            job_title = x["turnstilelink_link_1/_title"]
+            job_url = x["turnstilelink_link_1"]
+            results.append({"job_title": job_title, "job_url": job_url})
         return results
 
     def write_results(self, results):
@@ -93,19 +105,12 @@ class JobReport(object):
                 is_new = True
         return is_new
 
-    def send_text(self, username, password, phone_number, msg):
+    def send_bullet(self, api, source, msg):
         """Function sends text message to specified recipient using
-        gmail.
+        pushbullet.
         """
-        from_address = "Craigslist Checker"
-        to_address = phone_number + "@tmomail.net"
-        msg = "From: {0}\r\nTo: {1}\r\n\r\n{2}".format(from_address,
-                                                       to_address, msg)
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(username, password)
-        server.sendmail(from_address, to_address, msg)
-        server.quit()
+        pb = PushBullet(api)
+        pb.push_note(source, msg)
 
     def get_current_time(self):
         return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
