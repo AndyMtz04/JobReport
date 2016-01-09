@@ -21,7 +21,8 @@ class JobReport(object):
         self.complete_path = self.file_path + self.file_name
 
     def parse_results(self, url):
-        """Function parses job postings from a cragslist job section."""
+        """Function parses job postings from a cragslist job section.
+        """
         results = []
         count = 0
         html = urlopen(url).read()
@@ -66,6 +67,9 @@ class JobReport(object):
         return results
 
     def indeed_parse(self, url):
+        """Function parses job data into a list from
+        indeed.com with import.io's api.
+        """
         results = []
         html = urlopen(url)
         content = html.read().decode(html.headers.get_content_charset())
@@ -105,17 +109,17 @@ class JobReport(object):
                 is_new = True
         return is_new
 
-    def send_bullet(self, api, source, msg):
+    def send_bullet(self, api, title, msg):
         """Function sends text message to specified recipient using
         pushbullet.
         """
         pb = PushBullet(api)
-        pb.push_note(source, msg)
+        pb.push_note(title, msg)
 
     def get_current_time(self):
-        return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    def new_job(self, results):
+    def extract_job(self, results):
         """Function extracts new job titles and urls from results."""
         final_results = []
         with open(self.complete_path, "r") as file:
