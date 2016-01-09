@@ -21,7 +21,8 @@ class JobReport(object):
         self.complete_path = self.file_path + self.file_name
 
     def parse_results(self, url):
-        """Function parses job postings from a cragslist job section.
+        """Function parses job postings from a cragslist
+        job section.
         """
         results = []
         count = 0
@@ -90,8 +91,8 @@ class JobReport(object):
             dw.writerows(results)
 
     def has_new_records(self, results):
-        """Function compares results with stored results to determine
-         if new jobs have been posted.
+        """Function compares results with stored results
+        to determine if new jobs have been posted.
          """
         current_posts = [x["job_url"] for x in results]
         if not os.path.exists(self.complete_path):
@@ -110,8 +111,8 @@ class JobReport(object):
         return is_new
 
     def send_bullet(self, api, title, msg):
-        """Function sends text message to specified recipient using
-        pushbullet.
+        """Function sends text message to specified
+        recipient using pushbullet.
         """
         pb = PushBullet(api)
         pb.push_note(title, msg)
