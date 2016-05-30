@@ -81,6 +81,17 @@ class JobReport(object):
             results.append({"job_title": job_title, "job_url": job_url})
         return results
 
+    def city_parse(self, url):
+        results = []
+        html = urlopen(url)
+        content = html.read().decode(html.headers.get_content_charset())
+        json_dict = json.loads(content)
+        for x in json_dict["results"]:
+            job_title = x["jobtitle_link/_text"]
+            job_url = x["jobtitle_link"]
+            results.append({"job_title": job_title, "job_url": job_url})
+        return results
+
     def write_results(self, results):
         """Function writes results to a specified csv file"""
         fields = list(results[0].keys())
