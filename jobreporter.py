@@ -1,15 +1,9 @@
 import json
-
 import csv
-
 import os
-
 from datetime import datetime
-
 from urllib.request import urlopen
-
 from bs4 import BeautifulSoup
-
 from pushbullet import PushBullet
 
 
