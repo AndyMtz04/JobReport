@@ -1,6 +1,7 @@
 import json
 import csv
 import os
+import requests
 from datetime import datetime
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
@@ -20,7 +21,8 @@ class JobReport(object):
         """
         results = []
         count = 0
-        html = urlopen(url).read()
+        html = requests.get(url).text
+        #html = urlopen(url).read()
         soup = BeautifulSoup(html, "html.parser")
         rows = soup.find("div", "content").find_all("p", "row")
         for row in rows:
@@ -40,25 +42,13 @@ class JobReport(object):
         http://sites.austincc.edu/ with import.io's api.
         """
         results = []
-        html = urlopen(url)
-        content = html.read().decode(html.headers.get_content_charset())
-        json_dict = json.loads(content)
-        if "ehire" in json_dict["pageUrl"]:
-            for x in json_dict["results"]:
-                job_title = x["title_link/_text"]
-                job_url = x["jobnumber_link"]
-                job_location = x["location_value"]
-                results.append({"job_title": job_title, "job_url": job_url,
-                                "job_location": job_location})
-        else:
-            for x in json_dict["results"]:
-                job_title = x["linemajor_link/_text"]
-                job_url = x["linemajor_link"]
-                job_time = x["subsmall_value_2"]
-                job_company = x["subsmall_value_1"]
-                results.append({"job_title": job_title, "job_url": job_url,
-                                "job_time": job_time,
-                                "job_company": job_company})
+        html = requests.get(url).text
+        json_dict = json.loads(html)
+        for x in json_dict["results"]:
+            job_title = x["link_2/_text"]
+            job_url = x["link_1"]
+            results.append({"job_title": job_title, "job_url": job_url})
+
         return results
 
     def indeed_parse(self, url):
@@ -89,7 +79,7 @@ class JobReport(object):
     def write_results(self, results):
         """Function writes results to a specified csv file"""
         fields = list(results[0].keys())
-        with open(self.complete_path, "w") as file:
+        with open(self.complete_path, "w", encoding="utf-8") as file:
             dw = csv.DictWriter(file, fieldnames=fields, delimiter="|",
                                 lineterminator="\n")
             dw.writer.writerow(dw.fieldnames)
