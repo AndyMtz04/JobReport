@@ -1,131 +1,64 @@
-import json
-import csv
-import os
+import bs4
+import datetime
 import requests
-from datetime import datetime
-from urllib.request import urlopen
-from bs4 import BeautifulSoup
-from pushbullet import PushBullet
 
 
 class JobReport(object):
 
-    def __init__(self, file_name, file_path):
-        self.file_name = file_name
-        self.file_path = file_path
-        self.complete_path = self.file_path + self.file_name
+    def __init__(self, site_url, search_url, soup_param, db_session, db_model):
+        self.site_url = site_url
+        self.search_url = search_url
+        self.soup_param = soup_param
+        self.db_session = db_session
+        self.db_model = db_model
+        self.job_results = []
+        self.final_results = []
+        self.bullet_results = []
 
-    def parse_results(self, url):
-        """Function parses job postings from a cragslist
-        job section.
-        """
-        results = []
-        count = 0
-        html = requests.get(url).text
-        #html = urlopen(url).read()
-        soup = BeautifulSoup(html, "html.parser")
-        rows = soup.find("div", "content").find_all("p", "row")
+    def parse_results(self):
+
+        html = requests.get(self.search_url).text
+        soup = bs4.BeautifulSoup(html, "html.parser")
+        first_element = self.soup_param["element_1"]
+        first_class = self.soup_param["class_1"]
+        first_id = self.soup_param["id_1"]
+        second_element = self.soup_param["element_2"]
+        second_class = self.soup_param["class_2"]
+        title_position = self.soup_param["title_position"]
+
+        if first_class is not None:
+            rows = soup.find(first_element, first_class).find_all(second_element, second_class)
+        else:
+            rows = soup.find(first_element, id=first_id).find_all(second_element, second_class)
+
         for row in rows:
-            if count < 30:
-                count += 1
-                job_url = "https://austin.craigslist.org" + row.a["href"]
-                job_date = row.find("time").get("datetime")
-                job_title = row.find_all("a")[1].get_text()
-                results.append({"job_url": job_url, "job_date": job_date,
-                                "job_title": job_title})
-            else:
-                break
-        return results
+            if row.a is not None:
+                job_link = self.site_url + row.a["href"]
+                job_title = row.find_all("a")[title_position].get_text().strip("\n").split("\n")[0]
+                self.job_results.append({"job_link": job_link, "job_title": job_title})
 
-    def austincc_parse(self, url):
-        """Function parses job data into a list from
-        http://sites.austincc.edu/ with import.io's api.
-        """
-        results = []
-        html = requests.get(url).text
-        json_dict = json.loads(html)
-        for x in json_dict["results"]:
-            job_title = x["link_2/_text"]
-            job_url = x["link_1"]
-            results.append({"job_title": job_title, "job_url": job_url})
+    def extract_jobs(self):
 
-        return results
+        link_query = self.db_session.query(self.db_model.job_link).all()
 
-    def indeed_parse(self, url):
-        """Function parses job data into a list from
-        indeed.com with import.io's api.
-        """
-        results = []
-        html = urlopen(url)
-        content = html.read().decode(html.headers.get_content_charset())
-        json_dict = json.loads(content)
-        for x in json_dict["results"]:
-            job_title = x["turnstilelink_link_1/_title"]
-            job_url = x["turnstilelink_link_1"]
-            results.append({"job_title": job_title, "job_url": job_url})
-        return results
+        for job in self.job_results:
+            in_db = False
+            for link in link_query:
+                if link[0] == job["job_link"]:
+                    in_db = True
+            if not in_db:
+                self.final_results.append(job)
+                self.bullet_results.append({job["job_title"]: job["job_link"]})
 
-    def city_parse(self, url):
-        results = []
-        html = urlopen(url)
-        content = html.read().decode(html.headers.get_content_charset())
-        json_dict = json.loads(content)
-        for x in json_dict["results"]:
-            job_title = x["jobtitle_link/_text"]
-            job_url = x["jobtitle_link"]
-            results.append({"job_title": job_title, "job_url": job_url})
-        return results
+    def write_results(self):
 
-    def write_results(self, results):
-        """Function writes results to a specified csv file"""
-        fields = list(results[0].keys())
-        with open(self.complete_path, "w", encoding="utf-8") as file:
-            dw = csv.DictWriter(file, fieldnames=fields, delimiter="|",
-                                lineterminator="\n")
-            dw.writer.writerow(dw.fieldnames)
-            dw.writerows(results)
+        for job in reversed(self.final_results):
+            self.db_session.add(self.db_model(job_link=job["job_link"], job_title=job["job_title"]))
 
-    def has_new_records(self, results):
-        """Function compares results with stored results
-        to determine if new jobs have been posted.
-         """
-        current_posts = [x["job_url"] for x in results]
-        if not os.path.exists(self.complete_path):
-            with open(self.complete_path, "w") as new_file:
-                return True
-        with open(self.complete_path, "r") as file:
-            reader = csv.DictReader(file, delimiter="|")
-            seen_posts = [row["job_url"] for row in reader]
+        self.db_session.commit()
 
-        is_new = False
-        for post in current_posts:
-            if post in seen_posts:
-                pass
-            else:
-                is_new = True
-        return is_new
+    def delete_results(self):
 
-    def send_bullet(self, api, title, msg):
-        """Function sends text message to specified
-        recipient using pushbullet.
-        """
-        pb = PushBullet(api)
-        pb.push_note(title, msg)
-
-    def get_current_time(self):
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    def extract_job(self, results):
-        """Function extracts new job titles and urls from results."""
-        final_results = []
-        with open(self.complete_path, "r") as file:
-            reader = csv.DictReader(file, delimiter="|")
-            seen_results = [x for x in reader]
-            for x in range(len(results)):
-                if results[x] in seen_results:
-                    pass
-                else:
-                    job_title = results[x]["job_title"]
-                    job_url = results[x]["job_url"]
-                    final_results.append({job_title: job_url})
-        return final_results
+        time_frame = datetime.date.today() - datetime.timedelta(days=-31)
+        date_query = self.db_session.query(self.db_model).filter(self.db_model.date_created >= time_frame)
+        date_query.delete(synchronize_session=False)
