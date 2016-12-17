@@ -1,53 +1,60 @@
+import datetime
 from jobreporter import JobReport
+from pushbullet import PushBullet
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy.orm import sessionmaker
 
-FILE_PATH = ""
-API = "" # pushbullet api key
+# Enter PushBullet API
+API = ""
+
+# This example uses postgresql database.
+# Enter correct password and database name to connect
+engine = create_engine('postgresql://postgres:password1@localhost/db_name', echo=False)
+Base = declarative_base()
+
+# Model used to created the database columns
+class Job(Base):
+
+    __tablename__ = "Jobs"
+
+    id = Column(Integer, primary_key=True)
+    job_title = Column(String)
+    job_link = Column(String)
+    date_created = Column(Date, default=datetime.date.today())
+
+Base.metadata.create_all(engine)
 
 
 def main():
 
-    tech_url = "https://austin.craigslist.org/search/tch"
+    pb = PushBullet(API)
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
-    search_jobs(tech_url, "tech_support.csv")
+    craigslist_search(session, pb)
 
 
-def search_jobs(url, file_name):
-    """Function uses the jobreporter class to start
-    searching for jobs and determines which parser to use.
-    """
-    job = JobReport(file_name, FILE_PATH)
-    job_type = file_name.replace(".csv", "")
-    if "craigslist" in url:
-        results = job.parse_results(url)
-        if job.has_new_records(results):
-            message = "{0}".format(job.extract_job(results))
-            job.send_bullet(API, job_type, message)
-            job.write_results(results)
-        else:
-            #print("{0} no new jobs for {1}".format(job.get_current_time(),
-                                                   #job_type))
-            pass
+def craigslist_search(session, pb):
 
-    elif "austincc" in url:
-        results = job.austincc_parse(url)
-        if job.has_new_records(results):
-            message = "{0}".format(job.extract_job(results))
-            job.send_bullet(API, job_type, message)
-            job.write_results(results)
-        else:
-            #print("{0} no new jobs for {1}".format(job.get_current_time(),
-                                                   #job_type))
-            pass
+    # Site url used to create the job links
+    site_url = "https://austin.craigslist.org"
+    # Site url to parse job postings
+    search_url = "https://austin.craigslist.org/search/sof"
+    # Arguments used by bs4 to scrape job postings
+    # See example section on the README.MD for a visual example
+    soup_args = {"element_1": "ul", "class_1": "rows", "id_1": None, "element_2": "p",
+                 "class_2": "result-info", "title_position": 0}
+    jr = JobReport(site_url, search_url, soup_args, session, Job)
 
-    else:
-        results = job.indeed_parse(url)
-        if job.has_new_records(results):
-            message = "{0}".format(job.extract_job(results))
-            job.send_bullet(API, job_type, message)
-            job.write_results(results)
-        else:
-            #print("{0} no new jobs for {1}".format(job.get_current_time(),
-                                                   #job_type))
-            pass
+    jr.parse_results()
+    jr.extract_jobs()
+    jr.write_results()
+    jr.delete_results()
 
-main()
+    # PushBullet message will be sent if there are new postings
+    if jr.bullet_results:
+        tittle = "Craigslist Jobs"
+        message = "{0}".format(jr.bullet_results)
+        pb.push_note(tittle, message)
