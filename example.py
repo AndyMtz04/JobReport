@@ -37,6 +37,10 @@ def main():
 
 
 def craigslist_search(session, pb):
+    """
+    Function scrapes job links from craigslist and sends a text message if there
+    are new job postings not stored in the database.
+    """
 
     # Site url used to create the job links
     site_url = "https://austin.craigslist.org"
@@ -46,8 +50,8 @@ def craigslist_search(session, pb):
     # See example section on the README.MD for a visual example
     soup_args = {"element_1": "ul", "class_1": "rows", "id_1": None, "element_2": "p",
                  "class_2": "result-info", "title_position": 0}
-    jr = JobReport(site_url, search_url, soup_args, session, Job)
 
+    jr = JobReport(site_url, search_url, soup_args, session, Job)
     jr.parse_results()
     jr.extract_jobs()
     jr.write_results()

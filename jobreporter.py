@@ -16,6 +16,7 @@ class JobReport(object):
         self.bullet_results = []
 
     def parse_results(self):
+        """Method extracts job links and titles from job posting site"""
 
         html = requests.get(self.search_url).text
         soup = bs4.BeautifulSoup(html, "html.parser")
@@ -38,6 +39,7 @@ class JobReport(object):
                 self.job_results.append({"job_link": job_link, "job_title": job_title})
 
     def extract_jobs(self):
+        """Method extracts non duplicate jobs by comparing job stored in the database"""
 
         link_query = self.db_session.query(self.db_model.job_link).all()
 
@@ -51,6 +53,7 @@ class JobReport(object):
                 self.bullet_results.append({job["job_title"]: job["job_link"]})
 
     def write_results(self):
+        """Method writes non duplicate results to the database"""
 
         for job in reversed(self.final_results):
             self.db_session.add(self.db_model(job_link=job["job_link"], job_title=job["job_title"]))
@@ -58,6 +61,7 @@ class JobReport(object):
         self.db_session.commit()
 
     def delete_results(self):
+        """Method deletes job postings older than 30 days from the database"""
 
         time_frame = datetime.date.today() - datetime.timedelta(days=-31)
         date_query = self.db_session.query(self.db_model).filter(self.db_model.date_created >= time_frame)

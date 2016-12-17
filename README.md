@@ -9,12 +9,16 @@ Since then, the script has been completely redone and has implemented new featur
 
 Install Python 3
 
+Install Postgresql
+
 Install BeautifulSoup 4, Requests, sqlalchemy, and pushbullet.py
 
 Pushbullet.py is optional.
 
 # Example
 ![Alt text](https://github.com/AndyMtz04/jobreporter/blob/master/images/soup_arguments.png)
+
+In this example and in example.py, craigslist job posting area is being used to demonstrate the script.
 
 Bs4 navigates through the black and red rectangles to scrape job links. 
 
