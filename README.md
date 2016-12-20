@@ -11,7 +11,7 @@ Install Python 3
 
 Install Postgresql
 
-Install BeautifulSoup 4, Requests, sqlalchemy
+Install BeautifulSoup 4, Requests, sqlalchemy, and pushbullet.py
 
 
 # Example
