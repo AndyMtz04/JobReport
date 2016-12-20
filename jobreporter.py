@@ -1,6 +1,7 @@
 import bs4
 import datetime
 import requests
+import pushbullet
 
 
 class JobReport(object):
@@ -66,3 +67,16 @@ class JobReport(object):
         time_frame = datetime.date.today() - datetime.timedelta(days=-31)
         date_query = self.db_session.query(self.db_model).filter(self.db_model.date_created >= time_frame)
         date_query.delete(synchronize_session=False)
+
+    def create_report(self, api, msg_tittle):
+        """Method creates the report and sends a message of the new jobs postings."""
+
+        self.parse_results()
+        self.extract_jobs()
+        self.write_results()
+        self.delete_results()
+
+        if self.bullet_results:
+            pb = pushbullet.PushBullet(api)
+            msg_body = "{0}".format(self.bullet_results)
+            pb.push_note(msg_tittle, msg_body)
