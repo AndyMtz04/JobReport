@@ -1,4 +1,5 @@
 *.pyc
+*.log
 job_search.py
 info.txt
 results

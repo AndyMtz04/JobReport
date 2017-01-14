@@ -2,6 +2,7 @@ import bs4
 import datetime
 import requests
 import pushbullet
+import logging
 
 
 class JobReport(object):
@@ -15,6 +16,7 @@ class JobReport(object):
         self.job_results = []
         self.final_results = []
         self.bullet_results = []
+        self.logger = logging.getLogger(__name__)
 
     def parse_results(self):
         """Method extracts job links and titles from job posting site"""
@@ -30,14 +32,18 @@ class JobReport(object):
 
         if first_class is not None:
             rows = soup.find(first_element, first_class).find_all(second_element, second_class)
+            self.logger.debug(rows)
         else:
             rows = soup.find(first_element, id=first_id).find_all(second_element, second_class)
+            self.logger.debug(rows)
 
         for row in rows:
             if row.a is not None:
                 job_link = self.site_url + row.a["href"]
                 job_title = row.find_all("a")[title_position].get_text().strip("\n").split("\n")[0]
                 self.job_results.append({"job_link": job_link, "job_title": job_title})
+
+        self.logger.debug(self.job_results)
 
     def extract_jobs(self):
         """Method extracts non duplicate jobs by comparing job stored in the database"""
@@ -52,6 +58,8 @@ class JobReport(object):
             if not in_db:
                 self.final_results.append(job)
                 self.bullet_results.append({job["job_title"]: job["job_link"]})
+
+        self.logger.debug(self.final_results)
 
     def write_results(self):
         """Method writes non duplicate results to the database"""
