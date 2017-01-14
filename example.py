@@ -1,4 +1,6 @@
 import datetime
+import logging.config
+import json
 from jobreporter import JobReport
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -28,10 +30,18 @@ Base.metadata.create_all(engine)
 
 def main():
 
+    with open("logging.json", "rt") as file:
+        config = json.load(file)
+
+    logging.config.dictConfig(config)
+    logger = logging.getLogger(__name__)
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    craigslist_search(session)
+    try:
+        craigslist_search(session)
+    except Exception:
+        logger.error("craigslist_search error", exc_info=True)
 
 
 def craigslist_search(session):
