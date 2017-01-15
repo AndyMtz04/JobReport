@@ -1,10 +1,12 @@
 *.pyc
 *.log
-job_search.py
-info.txt
-results
-testing.py
-__pycache__
 .idea
+__pycache__
+job_search.py
+testing.py
+models.py
+info.txt
 test.txt
+log_config.json
+logs
 job35

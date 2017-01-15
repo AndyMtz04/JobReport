@@ -7,10 +7,7 @@ import logging
 
 class JobReport(object):
 
-    def __init__(self, site_url, search_url, soup_param, db_session, db_model):
-        self.site_url = site_url
-        self.search_url = search_url
-        self.soup_param = soup_param
+    def __init__(self, db_session, db_model):
         self.db_session = db_session
         self.db_model = db_model
         self.job_results = []
@@ -18,17 +15,17 @@ class JobReport(object):
         self.bullet_results = []
         self.logger = logging.getLogger(__name__)
 
-    def parse_results(self):
+    def parse_results(self, site_url, search_url, soup_param):
         """Method extracts job links and titles from job posting site"""
 
-        html = requests.get(self.search_url).text
+        html = requests.get(search_url).text
         soup = bs4.BeautifulSoup(html, "html.parser")
-        first_element = self.soup_param["element_1"]
-        first_class = self.soup_param["class_1"]
-        first_id = self.soup_param["id_1"]
-        second_element = self.soup_param["element_2"]
-        second_class = self.soup_param["class_2"]
-        title_position = self.soup_param["title_position"]
+        first_element = soup_param["element_1"]
+        first_class = soup_param["class_1"]
+        first_id = soup_param["id_1"]
+        second_element = soup_param["element_2"]
+        second_class = soup_param["class_2"]
+        title_position = soup_param["title_position"]
 
         if first_class is not None:
             rows = soup.find(first_element, first_class).find_all(second_element, second_class)
@@ -39,7 +36,7 @@ class JobReport(object):
 
         for row in rows:
             if row.a is not None:
-                job_link = self.site_url + row.a["href"]
+                job_link = site_url + row.a["href"]
                 job_title = row.find_all("a")[title_position].get_text().strip("\n").split("\n")[0]
                 self.job_results.append({"job_link": job_link, "job_title": job_title})
 
@@ -72,14 +69,21 @@ class JobReport(object):
     def delete_results(self):
         """Method deletes job postings older than 30 days from the database"""
 
-        time_frame = datetime.date.today() - datetime.timedelta(days=-31)
+        time_frame = datetime.date.today() - datetime.timedelta(days=-30)
         date_query = self.db_session.query(self.db_model).filter(self.db_model.date_created >= time_frame)
         date_query.delete(synchronize_session=False)
 
-    def create_report(self, api, msg_tittle):
+    def empty_lists(self):
+        """Method empties results lists."""
+        
+        self.job_results[:] = []
+        self.final_results[:] = []
+        self.bullet_results[:] = []
+
+    def create_report(self, api, msg_title, site_url, search_url, soup_param):
         """Method creates the report and sends a message of the new jobs postings."""
 
-        self.parse_results()
+        self.parse_results(site_url, search_url, soup_param)
         self.extract_jobs()
         self.write_results()
         self.delete_results()
@@ -87,4 +91,6 @@ class JobReport(object):
         if self.bullet_results:
             pb = pushbullet.PushBullet(api)
             msg_body = "{0}".format(self.bullet_results)
-            pb.push_note(msg_tittle, msg_body)
+            pb.push_note(msg_title, msg_body)
+
+        self.empty_lists()
