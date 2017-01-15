@@ -75,7 +75,7 @@ class JobReport(object):
 
     def empty_lists(self):
         """Method empties results lists."""
-        
+
         self.job_results[:] = []
         self.final_results[:] = []
         self.bullet_results[:] = []
