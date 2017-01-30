@@ -17,4 +17,7 @@ class Job(Base):
     job_link = Column(String)
     date_created = Column(Date, default=datetime.date.today())
 
+    def __repr__(self):
+        return self.job_title
+
 Base.metadata.create_all(engine)
