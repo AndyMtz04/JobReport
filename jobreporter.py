@@ -69,8 +69,8 @@ class JobReport(object):
     def delete_results(self):
         """Method deletes job postings older than 30 days from the database"""
 
-        time_frame = datetime.date.today() - datetime.timedelta(days=-30)
-        date_query = self.db_session.query(self.db_model).filter(self.db_model.date_created >= time_frame)
+        time_frame = datetime.date.today() - datetime.timedelta(days=30)
+        date_query = self.db_session.query(self.db_model).filter(self.db_model.date_created <= time_frame)
         date_query.delete(synchronize_session=False)
 
     def empty_lists(self):
