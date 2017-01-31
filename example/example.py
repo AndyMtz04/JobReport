@@ -22,6 +22,7 @@ def main():
     jr = JobReport(session, example.example_model.Job)
 
     craigslist_search(jr)
+    jr.delete_results()
     logger.info("Tasks Complete!")
 
 

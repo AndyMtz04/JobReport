@@ -43,7 +43,7 @@ class JobReport(object):
         self.logger.debug(self.job_results)
 
     def extract_jobs(self):
-        """Method extracts non duplicate jobs by comparing job stored in the database"""
+        """Method extracts non duplicate jobs by comparing jobs stored in the database"""
 
         link_query = self.db_session.query(self.db_model.job_link).all()
 
@@ -81,12 +81,11 @@ class JobReport(object):
         self.bullet_results[:] = []
 
     def create_report(self, api, msg_title, site_url, search_url, soup_param):
-        """Method creates the report and sends a message of the new jobs postings."""
+        """Method creates a report and sends a message of the new job postings."""
 
         self.parse_results(site_url, search_url, soup_param)
         self.extract_jobs()
         self.write_results()
-        self.delete_results()
 
         if self.bullet_results:
             pb = pushbullet.PushBullet(api)
