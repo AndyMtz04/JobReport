@@ -73,6 +73,8 @@ class JobReport(object):
         date_query = self.db_session.query(self.db_model).filter(self.db_model.date_created <= time_frame)
         date_query.delete(synchronize_session=False)
 
+        self.db_session.commit()
+
     def empty_lists(self):
         """Method empties results lists."""
 
