@@ -1,7 +1,7 @@
 import example.example_model
 import logging.config
 import json
-from jobreporter import JobReport
+from job.jobreporter import JobReport
 from sqlalchemy.orm import sessionmaker
 
 # Enter PushBullet API
