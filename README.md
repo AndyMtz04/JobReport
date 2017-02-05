@@ -35,3 +35,4 @@ soup_args = {"element_1": "ul", "class_1": "rows", "id_1": None, "element_2": "p
 # ToDo
 * Add tests
 
+* Update setup with more details
