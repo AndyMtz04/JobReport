@@ -29,10 +29,8 @@ class JobReport(object):
 
         if first_class is not None:
             rows = soup.find(first_element, first_class).find_all(second_element, second_class)
-            self.logger.debug(rows)
         else:
             rows = soup.find(first_element, id=first_id).find_all(second_element, second_class)
-            self.logger.debug(rows)
 
         for row in rows:
             if row.a is not None:
@@ -40,6 +38,7 @@ class JobReport(object):
                 job_title = row.find_all("a")[title_position].get_text().strip("\n").split("\n")[0]
                 self.job_results.append({"job_link": job_link, "job_title": job_title})
 
+        self.logger.debug(rows)
         self.logger.debug(self.job_results)
 
     def extract_jobs(self):
