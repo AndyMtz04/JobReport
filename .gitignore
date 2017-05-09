@@ -1,5 +1,6 @@
 *.pyc
 *.log
+*.swp
 .idea
 __pycache__
 job_search.py
@@ -9,3 +10,4 @@ test.txt
 log_config.json
 logs
 job35
+job34
