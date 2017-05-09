@@ -11,13 +11,26 @@ Install Python 3
 
 Install Postgresql
 
-Install BeautifulSoup 4, Requests, sqlalchemy, and pushbullet.py
+For Linux, install, with a package manager, postgresql-devel and python-devel
 
+Install with pip BeautifulSoup 4, requests, sqlalchemy, and pushbullet.py
+
+Use template/template_main.py as a template and place it in JobReport/ directory
+
+Use template/log_config.json as a template and place it in JobReport/ directory 
+
+Use template/template_models.py as a empalte and place it in JobReport/job/ directory
+
+Update the constants in template_main.py with the appropriate settings
+
+Update the constant in job/template_models.py with the database URI
+
+run template_main.py script
 
 # Example
 ![Alt text](https://github.com/AndyMtz04/jobreporter/blob/master/images/soup_arguments.png)
 
-In this example and in example.py, craigslist job posting area is being used to demonstrate the script.
+In templates/template_main.py, craigslist job posting area is used to demonstrate the script.
 
 Bs4 navigates through the black and red rectangles to scrape job links. 
 

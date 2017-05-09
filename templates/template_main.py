@@ -1,9 +1,9 @@
-import example.example_model
 import logging.config
 import json
-import example_models
-from jobreporter import JobReport
+from job import template_models
+from job.jobreporter import JobReport
 from sqlalchemy.orm import sessionmaker
+
 
 
 # Enter PushBullet API key
@@ -21,10 +21,10 @@ logger = logging.getLogger(__name__)
 
 def main():
 
-    Session = sessionmaker(bind=example_model.engine)
+    Session = sessionmaker(bind=template_models.engine)
     session = Session()
 
-    jr = JobReport(session, example_model.Job)
+    jr = JobReport(session, template_models.Job)
 
     craigslist_search(jr)
     jr.delete_results()
