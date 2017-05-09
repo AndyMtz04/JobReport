@@ -17,7 +17,7 @@ Install with pip BeautifulSoup 4, requests, sqlalchemy, and pushbullet.py
 
 Use template/template_main.py as a template and place it in JobReport/ directory
 
-Use template/log_config.json as a template and place it in JobReport/ directory 
+Use template/template_log_config.json as a template and place it in JobReport/ directory 
 
 Use template/template_models.py as a empalte and place it in JobReport/job/ directory
 
@@ -48,4 +48,3 @@ soup_args = {"element_1": "ul", "class_1": "rows", "id_1": None, "element_2": "p
 # ToDo
 * Add tests
 
-* Update setup with more details
