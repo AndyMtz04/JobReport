@@ -1,25 +1,30 @@
 import example.example_model
 import logging.config
 import json
-from job.jobreporter import JobReport
+import example_models
+from jobreporter import JobReport
 from sqlalchemy.orm import sessionmaker
 
-# Enter PushBullet API
-API = ""
 
-with open("<Enter logging.json config file location>", "rt") as file:
+# Enter PushBullet API key
+PB_API = ""
+# Enter the full path of the log config file
+LOG_FILE = ""
+
+
+with open(LOG_FILE, "rt") as file:
     config = json.load(file)
-
+ 
 logging.config.dictConfig(config)
 logger = logging.getLogger(__name__)
 
 
 def main():
 
-    Session = sessionmaker(bind=example.example_model.engine)
+    Session = sessionmaker(bind=example_model.engine)
     session = Session()
 
-    jr = JobReport(session, example.example_model.Job)
+    jr = JobReport(session, example_model.Job)
 
     craigslist_search(jr)
     jr.delete_results()

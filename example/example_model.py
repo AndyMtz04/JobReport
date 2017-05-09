@@ -3,8 +3,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date
 
+
 # Enter the database uri to connect to the database
-engine = create_engine('<enter db uri here>', echo=False)
+DB_URI = ""
+# Example
+# DB_URI = "postgresql://postgres:dbPassword@localhost/dbName"
+
+
+engine = create_engine(DB_URI, echo=False)
 Base = declarative_base()
 
 
