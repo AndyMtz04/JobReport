@@ -9,5 +9,4 @@ models.py
 test.txt
 log_config.json
 logs
-job35
-job34
+job3*
