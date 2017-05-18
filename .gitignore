@@ -3,7 +3,7 @@
 *.swp
 .idea
 __pycache__
-job_search.py
+job_search.*
 testing.py
 models.py
 test.txt
